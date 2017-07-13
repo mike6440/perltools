@@ -3,8 +3,8 @@ use Exporter;
 @ISA = ('Exporter');
 @EXPORT = qw( &trim &ltrim &rtrim &FindLines &FindLineExact &FindInfo &isnumber &NotANumber &gprmc &NmeaChecksum);
 
-# editdate = 130702;
-# version = 4;
+# editdate = 170713;
+# version = 5;
 
 #USE IN A PROGRAM
 use lib $ENV{MYLIB};
@@ -360,9 +360,9 @@ sub gprmc
 	my @d;
 	my ($yy,$MM,$dd,$hh,$mm,$ss);
 	
-	#print "input sentence = $str\n";
+	#print "xxx input sentence = $str\n";
 	@dat = split(/[,*]/, $str);							# parse the data record
-	#$i=0; for (@dat) { printf "%d %s\n",$i++, $_  } #test
+	#$i=0; for (@dat) { printf "xxx %d %s\n",$i++, $_  } #test
 	#==============================
 	# 0 $GPRMC			header
 	# 1 190824			hhmmss
@@ -379,7 +379,6 @@ sub gprmc
 	# 12 62				checksum (ignore)
 	# ============================
 	$dtgps = $lat = $lon = $sog = $cog = $var = $nan; # start with all missing.
-	
 	# CHECK VALIDITY
 	if ( $dat[2] eq 'A' ) {
 		# GMT
@@ -390,7 +389,7 @@ sub gprmc
 		$MM = substr($dat[9],2,2);
 		$yy = 2000 + substr($dat[9],4,2);
 		$dtgps = perltools::MRtime::datesec($yy,$MM,$dd,$hh,$mm,$ss);
-		#printf "gps time = %s\n", dtstr($dtgps);
+		#printf "xxx gps time = %s\n", dtstr($dtgps);
 		
 		# latitude
 		if (looks_like_number($dat[3])) {
@@ -423,6 +422,7 @@ sub gprmc
 		
 		return ($dtgps, $lat, $lon, $sog, $cog, $var);
 	}
+	return (0,$nan,$nan,$nan,$nan,$nan);
 }
 
 #$GPRMC,190824,A,4737.0000,S,12300.0000,W,002.1,202.0,210210,019.0,W*62
@@ -430,6 +430,11 @@ sub NmeaChecksum
 # $cc = NmeaChecksum($str) where $str is the NMEA string that starts with '$' and ends with '*'.
 {
     my ($line) = @_;
+    my $ix=index($line,'*');
+#     printf "ix=%d, len=%d\n",$ix, length($line);
+#     print"line = $line\n";
+    $line=substr($line,0,$ix+1);
+#     print"line = $line\n";
     my $csum = 0;
     $csum ^= unpack("C",(substr($line,$_,1))) for(1..length($line)-2);
     return (sprintf("%2.2X",$csum));
