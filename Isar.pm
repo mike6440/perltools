@@ -1,7 +1,7 @@
 package perltools::Isar;
 use Exporter;
 @ISA = ('Exporter');
-@EXPORT = qw(&GetRadFromTemp &GetTempFromRad &GetEmis &MakeRadTable_planck &trapz &ComputeSSST &ComputeTarget);
+@EXPORT = qw(&GetRadFromTemp &GetTempFromRad &GetEmis &MakeRadTable_planck &trapz &planck &ComputeSSST &ComputeTarget);
 
 #USE IN A PROGRAM
 # use lib "/Users/rmr/swmain/perl";
@@ -174,7 +174,6 @@ sub MakeRadTable_planck
 #   $filterfile points to the file.
 #   $kv is 1/0 yes/no verbal to $main::TMP file
 #   $fhTMP = reference to the file handle for diognistic output
-#
 # OUTPUT:
 # $ttr = table temperature array.
 # $rtr = table radiance array
@@ -193,10 +192,9 @@ sub MakeRadTable_planck
 	@Ttable = ();  # output temperature vector
 	@Rtable = (); # output normalized radiance vector
 	if($kv==1){
-		print $TMP "MakeRadTable_planck: Make T-R table -- Using Planck Equation\n";
-		print $TMP "MakeRadTable_planck: Filter file at $fnm\n";
+		print"MakeRadTable_planck: Make T-R table -- Using Planck Equation\n";
+		print"MakeRadTable_planck: Filter file at $fnm\n";
 	}
-	
 	#==================
 	# GET THE FILTER FUNCTION
 	#=================
@@ -222,21 +220,20 @@ sub MakeRadTable_planck
 			push ( @resp, $w[1]  * $w[0]/10);
 		}
 		$iline++;
-	}
-	
+	}	
 	# --- ADD ZERO TERMS TO THE END -- IT HELPS ---
 	push ( @resp, 0 );   # zeros at the end
 	push ( @lambda, $lambda[$#lambda]+0.1 );
 	unshift ( @resp, 0 );   # zeros at the beginning
 	unshift ( @lambda, $lambda[0]-0.1 );
-	#$ii = 0;
-	#foreach(@lambda){print"$ii        $lambda[$ii]        $resp[$ii]\n"; $ii++}
+	#$ii = 0;foreach(@lambda){print"$ii        $lambda[$ii]        $resp[$ii]\n"; $ii++}die;
 	
 	# --- NORMALIZE BY MAXIMUM VALUE ---
 	my $respmax = -1e99;
 	foreach (@resp) { if($_ > $respmax){ $respmax = $_ }}
 	if($kv==1){printf $TMP "Max resp = %.4f\n", $respmax}
 	foreach  (0..$#resp) { $resp[$_] /= $respmax; }
+	#$ii = 0; foreach(@lambda){print"$ii        $lambda[$ii]        $resp[$ii]\n"; $ii++}die;
 	
 	# --- COMPUTE THE INTEGRATED RADIANCE FOR EACH TEMPERATURE ---
 	my @r;
