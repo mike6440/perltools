@@ -355,72 +355,80 @@ sub gprmc
 	my ($dtgps, $lat, $lon, $sog, $cog, $var);
 	my $str = shift();
 	my $nan = shift();
-	my ($d1, $d2);
+	my ($d1, $d2,$i1,$i2,$sentence);
 	my @dat;
 	my @d;
 	my ($yy,$MM,$dd,$hh,$mm,$ss);
 	
-	#print "xxx input sentence = $str\n";
-	@dat = split(/[,*]/, $str);							# parse the data record
-	#$i=0; for (@dat) { printf "xxx %d %s\n",$i++, $_  } #test
-	#==============================
-	# 0 $GPRMC			header
-	# 1 190824			hhmmss
-	# 2 A				A=good, V=bad
-	# 3 4736.2032		ddmm.mmmm
-	# 4 N				N+, S-
-	# 5 12217.2883		dddmm.mmmm
-	# 6 W				E+, W-
-	# 7 000.1			sog kts
-	# 8 209.1			cog degT
-	# 9 210210			ddMMyy
-	# 10 018.1			var
-	# 11 E				E+, W- degT = degM + var.
-	# 12 62				checksum (ignore)
-	# ============================
-	$dtgps = $lat = $lon = $sog = $cog = $var = $nan; # start with all missing.
-	# CHECK VALIDITY
-	if ( $dat[2] eq 'A' ) {
-		# GMT
-		$hh = substr($dat[1],0,2);
-		$mm = substr($dat[1],2,2);
-		$ss = substr($dat[1],4,2);
-		$dd = substr($dat[9],0,2);
-		$MM = substr($dat[9],2,2);
-		$yy = 2000 + substr($dat[9],4,2);
-		$dtgps = perltools::MRtime::datesec($yy,$MM,$dd,$hh,$mm,$ss);
-		#printf "xxx gps time = %s\n", dtstr($dtgps);
+		# GPRMC SENTENCE - extract from a string
+	$i1=index($str,"\$GPRMC");
+	$i2=index($str,"*")+2;
+	$sentence=substr($str,$i1,$i2-$i1+1);
+	my @chk = NmeaChecksum($sentence);
+	#printf"computed chk %s, packed chk %s\n",$chk[0], $chk[1];
+	if($chk[0] eq $chk[1]){
+		#print"nmea checksum okay\n";
+		@dat = split(/[,*]/, $sentence);	# parse the data record
+		#$i=0; for (@dat) { printf "xxx %d %s\n",$i++, $_  };die; #test
+		#==============================
+		# 0 $GPRMC			header
+		# 1 190824			hhmmss
+		# 2 A				A=good, V=bad
+		# 3 4736.2032		ddmm.mmmm
+		# 4 N				N+, S-
+		# 5 12217.2883		dddmm.mmmm
+		# 6 W				E+, W-
+		# 7 000.1			sog kts
+		# 8 209.1			cog degT
+		# 9 210210			ddMMyy
+		# 10 018.1			var
+		# 11 E				E+, W- degT = degM + var.
+		# 12 62				checksum (ignore)
+		# ============================
+		$dtgps = $lat = $lon = $sog = $cog = $var = $nan; # start with all missing.
+		# CHECK VALIDITY
+		if ( $dat[2] eq 'A' ) {
+			# GMT
+			$hh = substr($dat[1],0,2);
+			$mm = substr($dat[1],2,2);
+			$ss = substr($dat[1],4,2);
+			$dd = substr($dat[9],0,2);
+			$MM = substr($dat[9],2,2);
+			$yy = 2000 + substr($dat[9],4,2);
+			$dtgps = perltools::MRtime::datesec($yy,$MM,$dd,$hh,$mm,$ss);
+			#printf "xxx gps time = %s\n", dtstr($dtgps);
 		
-		# latitude
-		if (looks_like_number($dat[3])) {
-			@d = split(/[.]/,$dat[3]);
-			$d1 = substr($d[0], 0, length($d[0]) - 2);
-			$d2 = substr($d[0],-2,2);
-			$d2 = $d2.'.'.$d[1];
-			$lat = $d1 + $d2/60;
-			if ($dat[4] =~ /S/i) {$lat = -$lat}
+			# latitude
+			if (looks_like_number($dat[3])) {
+				@d = split(/[.]/,$dat[3]);
+				$d1 = substr($d[0], 0, length($d[0]) - 2);
+				$d2 = substr($d[0],-2,2);
+				$d2 = $d2.'.'.$d[1];
+				$lat = $d1 + $d2/60;
+				if ($dat[4] =~ /S/i) {$lat = -$lat}
+			}
+			# longitude
+			if (looks_like_number($dat[5])) {
+				@d = split(/[.]/,$dat[5]);
+				$d1 = substr($d[0], 0, length($d[0]) - 2);
+				$d2 = substr($d[0],-2,2);
+				$d2 = $d2.'.'.$d[1];
+				$lon = $d1 + $d2/60;
+				if ($dat[6] =~ /W/i) {$lon = -$lon}
+			}
+			
+			# speed over ground
+			$sog = looks_like_number($dat[7]) ? $dat[7] * 0.51444445 : $nan;
+			
+			# COURSE
+			$cog = looks_like_number($dat[8]) ? $dat[8] : $nan;
+			
+			# variation
+			$var = looks_like_number($dat[10]) ? $dat[10] : $nan;
+			if ( $dat[11] =~ /W/i) { $var = -$var }
+			
+			return ($dtgps, $lat, $lon, $sog, $cog, $var);
 		}
-		# longitude
-		if (looks_like_number($dat[5])) {
-			@d = split(/[.]/,$dat[5]);
-			$d1 = substr($d[0], 0, length($d[0]) - 2);
-			$d2 = substr($d[0],-2,2);
-			$d2 = $d2.'.'.$d[1];
-			$lon = $d1 + $d2/60;
-			if ($dat[6] =~ /W/i) {$lon = -$lon}
-		}
-		
-		# speed over ground
-		$sog = looks_like_number($dat[7]) ? $dat[7] * 0.51444445 : $nan;
-		
-		# COURSE
-		$cog = looks_like_number($dat[8]) ? $dat[8] : $nan;
-		
-		# variation
-		$var = looks_like_number($dat[10]) ? $dat[10] : $nan;
-		if ( $dat[11] =~ /W/i) { $var = -$var }
-		
-		return ($dtgps, $lat, $lon, $sog, $cog, $var);
 	}
 	return (0,$nan,$nan,$nan,$nan,$nan);
 }
@@ -428,16 +436,19 @@ sub gprmc
 #$GPRMC,190824,A,4737.0000,S,12300.0000,W,002.1,202.0,210210,019.0,W*62
 sub NmeaChecksum
 # $cc = NmeaChecksum($str) where $str is the NMEA string that starts with '$' and ends with '*'.
+# old version output : (computed chk, chk in the string)
+# 180202 rmr revised out is simply the checksum
 {
     my ($line) = @_;
-    my $ix=index($line,'*');
-#     printf "ix=%d, len=%d\n",$ix, length($line);
-#     print"line = $line\n";
-    $line=substr($line,0,$ix+1);
-#     print"line = $line\n";
+	my $i1=index($line,"\$GPRMC");
+    my $i2=index($line,'*');
+    my $line1=substr($line,$i1,$i2+1);
+    #print"line1 = $line1\n"; die;
     my $csum = 0;
-    $csum ^= unpack("C",(substr($line,$_,1))) for(1..length($line)-2);
-    return (sprintf("%2.2X",$csum));
+    $csum ^= unpack("C",(substr($line1,$_,1))) for(1..length($line1)-2);
+    #printf"csum=%2.2X, %s\n",$csum,substr($line,$i2+1,2); die;
+    # do i use this? return (sprintf("%2.2X",$csum), substr($line,$i2+1,2));
+    return sprintf("%2.2X",$csum);
 }
 
 

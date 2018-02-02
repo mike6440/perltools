@@ -187,6 +187,7 @@ sub dtstr2dt
 # prp:	120831
 # date:	120831
 # scs:	08/31/2012,17:00:46#
+# 14 characters 20171207131415
 {
 # 	use Date::Manip qw(ParseDate UnixDate);
 	
@@ -222,6 +223,14 @@ sub dtstr2dt
  		#2000+substr($dat[0],0,2),substr($dat[0],2,2),substr($dat[0],4,2);
  		$dt=datesec(2000+substr($dat[0],0,2),substr($dat[0],2,2),
  			substr($dat[0],4,2),0,0,0);
+ 		return $dt;
+ 	}
+ 	#====== 20150823121314 ==================
+ 	if($#dat==0 && length($dat[0])==14){
+ 		#printf"date=$dat[0], %d, %d, %d\n",
+ 		#2000+substr($dat[0],0,2),substr($dat[0],2,2),substr($dat[0],4,2);
+ 		$dt=datesec(substr($dat[0],0,4),substr($dat[0],4,2),
+ 			substr($dat[0],6,2),substr($dat[0],8,2),substr($dat[0],10,2),substr($dat[0],12,2));
  		return $dt;
  	}
 	#====== Wed, 10 Oct 2007 20:17:25 -0400 (EDT) ==========
