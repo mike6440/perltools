@@ -440,14 +440,14 @@ sub NmeaChecksum
 # 180202 rmr revised out is simply the checksum
 {
     my ($line) = @_;
-	my $i1=index($line,"\$GPRMC");
+	my $i1=index($line,"\$");
     my $i2=index($line,'*');
     my $line1=substr($line,$i1,$i2+1);
-    #print"line1 = $line1\n"; die;
+    #print"line1 = $line1\n";
     my $csum = 0;
     $csum ^= unpack("C",(substr($line1,$_,1))) for(1..length($line1)-2);
-    #printf"csum=%2.2X, %s\n",$csum,substr($line,$i2+1,2); die;
-    # do i use this? return (sprintf("%2.2X",$csum), substr($line,$i2+1,2));
+    #printf"csum=%2.2X\n",$csum; #test
+    # do i use this in other routines? return (sprintf("%2.2X",$csum), substr($line,$i2+1,2));
     return sprintf("%2.2X",$csum);
 }
 
