@@ -362,11 +362,13 @@ sub gprmc
 	
 		# GPRMC SENTENCE - extract from a string
 	$i1=index($str,"\$GPRMC");
-	$i2=index($str,"*")+2;
-	$sentence=substr($str,$i1,$i2-$i1+1);
-	my @chk = NmeaChecksum($sentence);
-	#printf"computed chk %s, packed chk %s\n",$chk[0], $chk[1];
-	if($chk[0] eq $chk[1]){
+	$i2=index($str,"*");
+	$sentence=substr($str,$i1,$i2-$i1+3);
+	#print"sentence=$sentence\n";
+	my $chk2 = substr($sentence,$i2+1,2);
+	my $chk1 = NmeaChecksum($sentence);
+	#printf"computed chk %s, packed chk %s\n",$chk1,$chk2;
+	if($chk1 eq $chk2){
 		#print"nmea checksum okay\n";
 		@dat = split(/[,*]/, $sentence);	# parse the data record
 		#$i=0; for (@dat) { printf "xxx %d %s\n",$i++, $_  };die; #test
@@ -443,11 +445,8 @@ sub NmeaChecksum
 	my $i1=index($line,"\$");
     my $i2=index($line,'*');
     my $line1=substr($line,$i1,$i2+1);
-    #print"line1 = $line1\n";
     my $csum = 0;
     $csum ^= unpack("C",(substr($line1,$_,1))) for(1..length($line1)-2);
-    #printf"csum=%2.2X\n",$csum; #test
-    # do i use this in other routines? return (sprintf("%2.2X",$csum), substr($line,$i2+1,2));
     return sprintf("%2.2X",$csum);
 }
 
