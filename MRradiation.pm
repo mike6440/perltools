@@ -211,7 +211,7 @@ sub aod_rayleigh_m
 	
 		# calculate Rayleigh optical thickness
 	$p=$p*1e3;        			# convert mb to gm cm/sec^2 /cm^2
-	my $tr=$sigma * $p * $A / $ma / $g; 
+	$tr=$sigma * $p * $A / $ma / $g; 
 
 	return $tr;
 }

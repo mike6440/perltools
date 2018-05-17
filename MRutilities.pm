@@ -175,7 +175,7 @@ sub FindInfo
 #    $fn='path/name' contains a line "SEARCH STRING - the answer"
 #  $str = FindInfo(filename_to_scan, 'SEARCH STRING',':',0,0);  print"$str\n";
 #  returns 'MISSING'
-
+#v15 180513 set max line search to 5000, for su PRPwith all the catted files.
  
 {
 	my @v = @_;
@@ -202,7 +202,7 @@ sub FindInfo
 	while ( <Finfo>) {
 		$rec++;
 				# LINE LIMIT
-		if ( $rec >= 1000 ) { 			#v14
+		if ( $rec >= 5000 ) { 			#v14#v15
 			close(Finfo);
 			#print"CANNOT FIND $strin.\n"; 
 			last;   #v17
@@ -225,7 +225,7 @@ sub FindInfo
 	# EOF AND NO STRING FOUND
 	close(Finfo);
 	#print"CANNOT FIND $strin. exit_on_fail = $exit_on_fail\n"; 
-	if ($exit_on_fail == 1) { exit 1 }
+	if ($exit_on_fail == 1) { print"$strin"; exit 1 }
 	return $strout;
 }
 #==============================================================
