@@ -352,9 +352,13 @@ sub gprmc
 #10. variation, Magnetic variation
 #11. sign variation, E or W  magnetic variation
 {
-	my ($dtgps, $lat, $lon, $sog, $cog, $var);
-	my $str = shift();
-	my $nan = shift();
+	my ($dtgps, $lat, $lon, $sog, $cog, $var,$nan);
+	my $str = $_[0];
+	if( $#_ <= 0 ){
+		$nan = 0;
+	} else {
+		$nan = $_[1];
+	}
 	my ($d1, $d2,$i1,$i2,$sentence);
 	my @dat;
 	my @d;
@@ -369,7 +373,7 @@ sub gprmc
 	my $chk1 = NmeaChecksum($sentence);
 	#printf"computed chk %s, packed chk %s\n",$chk1,$chk2;
 	if($chk1 eq $chk2){
-		#print"nmea checksum okay\n";
+		#print"nmea checksum okay, nan = $nan\n";
 		@dat = split(/[,*]/, $sentence);	# parse the data record
 		#$i=0; for (@dat) { printf "xxx %d %s\n",$i++, $_  };die; #test
 		#==============================
@@ -387,7 +391,7 @@ sub gprmc
 		# 11 E				E+, W- degT = degM + var.
 		# 12 62				checksum (ignore)
 		# ============================
-		$dtgps = $lat = $lon = $sog = $cog = $var = $nan; # start with all missing.
+		$dtgps=0;  $lat = $lon = $sog = $cog = $var = $nan; # start with all missing.
 		# CHECK VALIDITY
 		if ( $dat[2] eq 'A' ) {
 			# GMT
@@ -430,6 +434,8 @@ sub gprmc
 			if ( $dat[11] =~ /W/i) { $var = -$var }
 			
 			return ($dtgps, $lat, $lon, $sog, $cog, $var);
+		} else {
+			return (0,$nan,$nan,$nan,$nan,$nan);
 		}
 	}
 	return (0,$nan,$nan,$nan,$nan,$nan);
