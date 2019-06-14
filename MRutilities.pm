@@ -57,29 +57,29 @@ sub FindLines
 # v104 060902 rmr -- fixed problems with push
 # v105 061017 rmr -- just a simple retrieve of lines.
 # v106 130102 rmr -- add options
+# v107 180621 rmr -- I had to rewrite the open syntax. Strange problems.
 {
 	my $fname = shift();
+	#print"Read file $fname\n";
 	my $sx = shift();
 	my $nlines = shift();
 	
 	my $s;
 	my $str2 = '';
-	my @strout=('MISSING');
+	my @strout;
 	my $i;
-	
-	open ( F, "<$fname" ) or die("FindLines(),  $fname FAILS\n");
-	
-	while ( <F> ) {
-		chomp($s = $_);							# read each line
+	open ( my $fh, "<$fname" ) or die("FindLines(),  $fname FAILS\n"); #v107
+	while ( my $s = <$fh> ) {
+		chomp $s;
 		if ( $s =~ /$sx/ ) {
 			@strout= $s;						# v102, found string at [0]
 			#print"Start Reading lines\n";
 			# then read the next n lines
 			if ($nlines > 0 ) {
 				for ( $i=0; $i<$nlines; $i++ ) { 
-					chomp($str2 = <F>);
+					chomp($str2 = <$fh>);
 					push(@strout, $str2);
-					if ( $str2 =~ /^END/i || eof(F) ) { last }
+					if ( $str2 =~ /^END/i || eof($fh) ) { last }
 				}
 			}
 			last;
@@ -116,7 +116,7 @@ sub FindLinesExact
 	
 	my $s;
 	my $str2 = '';
-	my @strout='MISSING';
+	my @strout=('MISSING');
 	my $i;
 	
 	open ( F, "<$fname" ) or die("FindLines(),  $fname FAILS\n");

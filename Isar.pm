@@ -434,16 +434,15 @@ sub ComputeSSST
 # 		$ss = ComputeSSST(@xx1);
 # gives Tskin=9.508, Tcorr=-0.3312, Tuncorr=9.1770  
 #v3 110506 rmr -- moved to perl module Isar.pm
+#v4 190206 rmr--lower temp operation
 {
 	my ($bb1t, $bb2t, $kt1, $kt2, $ktsea, $ktsky, $pointangle, $pitch, $roll, $e_sea_0, $e_bb, $Acorr, $CalOffset, $kv, $missing, $ttr, $rtr, $TMP) = @_;
 	my ($e_sea, $S_1, $S_2, $S_k, $S_1v, $S_2v, $S_upwelling, $Ad, $S_dv, $Au, $S_uv, $S_skin, $T_uncorr, $T_skin);
-	#print "test ComputeSSST: @_\n";
+	if($kv==1){print $TMP "test ComputeSSST: @_\n";}
 	
-# 	print"test 445 kt1=$kt1, kt2=$kt2, ktsky=$ktsky, ktsea=$ktsea\n";
-# 	print"test 446 bb1t=$bb1t, bb2t=$bb2t, 
 	if ( $ktsky != $missing && $ktsea != $missing &&
-	$kt1 != $missing && $kt2 != $missing && $kt2 >0 && $kt1 > 0 && $kt2 > $kt1 && $bb1t > 0 
-	&& $bb2t > 0 && abs($bb2t-$bb1t) > 5 ) {
+	$kt1 != $missing && $kt2 != $missing && $kt2 > 0 && $kt1 > 0 && $kt2 > $kt1 && $bb1t > -20 #v4
+	&& $bb2t > -10 && ($bb2t-$bb1t) > 5 ) { #v4
 		# v4.0 check if we have pitch and roll data.  For this first effort we will use
 		# only roll.  A positive roll decreases the isar view angle.  i.e. if the view angle is 
 		# 125 deg and the roll is +2 deg then the corrected view angle is 123 deg.  And the nadir
@@ -454,10 +453,11 @@ sub ComputeSSST
 		} else {
 			$e_sea = GetEmis( $pointangle - $roll );
 			#$e_sea=0.9882; #!!test
-			if (0) { 
-				printf "pitch = $pitch,  roll = $roll, ActualViewAngle = %.3f\n", $pointangle - $roll;
-				print  "e_sea=$e_sea, e_sea_0=$e_sea_0,   viewangle = $pointangle\n";
-			}
+		}
+		if ($kv==1) { 
+			printf $TMP "pitch = $pitch,  roll = $roll, ActualViewAngle = %.3f\n", $pointangle - $roll;
+			print $TMP "e_sea=$e_sea, e_sea_0=$e_sea_0,   viewangle = $pointangle\n";
+			die();
 		}
 		
 		#===================
@@ -526,6 +526,7 @@ sub ComputeSSST
 		if($kv == 1){printf $TMP "T_uncorr = %.3f, T_skin = %.3f  T_corrdiff = %.3f\n", $T_uncorr, $T_skin,  $T_corr}
 	}
 	else {
+		if($kv==1){print $TMP "SSST Calc fails on input.\n"; die()}
 		$T_uncorr = $T_skin = $T_corr = $missing;
 		$e_sea = 0;
 	}

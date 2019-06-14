@@ -146,7 +146,16 @@ sub aod_rayleigh
 #  ($ar) = aod_rayleigh ( $chan );
 #INPUT
 #  $chan = 2-7.  If chan=1, return 0
-#
+# @wc=[415,500,615,670,870,940];
+# -- calculate tr foreach $ic=2...7
+# $z=0; $lat=-45; $w=$wc[$ic-2]; $co2=400; $tair=0; $p=1013;
+# printf"z=%.1f, lat=%.1f, w=%.1f, co2=%.1f, tair=%.1f, p=%.0f\n",
+# 	$z,$lat,$w,$co2,$tair,$p;
+# $tr = aod_rayleigh_m($z, $lat, $w, $co2, $Tair, $p);
+# printf"rayleigh=%.4f\n",$tr;
+# -- gives (.2914, .1285, .0552, .0390, .0136, .0099)
+
+
 #  Computes the Rayleigh Optical Thickness for 
 #  any frsr detector number
 #  Based on the paper "bodhaine99"
@@ -155,7 +164,9 @@ sub aod_rayleigh
 	my $det=shift;
 	
 	# RAYLEIGH AOD FOR CHANNELS 2-7
-	my @a = (0.309, 0.14336, 0.061586, 0.040963, 0.001513, 0.001108);
+	
+	my @a=(.2914, .1285, .0552, .0390, .0136, .0099);
+	#my @a = (0.309, 0.14336, 0.061586, 0.040963, 0.001513, 0.001108);
 	#my @a = (0.321, 0.151, 0.064, 0.044, 0.016, 0.012);  # for lambda head 351, Magic
 	if ( $det < 2 || $det > 7 ) { return MISSING }
 	

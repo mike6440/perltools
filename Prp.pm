@@ -44,7 +44,7 @@ sub EdgeAndShadow
 #======================================================
 sub ZeError
 # ZEERROR - compute the zenith error calibration based on az and ze angle
-#          corr = ZeError(sz, saz, det)
+#          corr = ZeError(fcal, sz, saz, det)
 # =======================================================================
 # 
 # input: 
@@ -80,7 +80,8 @@ sub ZeError
 # 
 # ========================================================================
 {
-	my ($fcal, $ze, $saz, $det) = @_;
+	#my ($fcal, $ze, $saz, $det) = @_;
+	my $fcal=shift();my $ze=shift();my $saz=shift();my $det=shift();
 	my ($corr, $quad, $iz1, $iz2);
 	my ($sn1, $sn2, $we1, $we2);
 	my @isn1 = (1,1); # row, col
@@ -107,7 +108,6 @@ sub ZeError
 	$quad = int($saz/90) + 1;
 	$iz1 = int($ze);  
 	($iz2) = min ( $iz1+1, 90);  # # 1,2,...,90
-	
 	#print"QUADRANT: $quad\n";
 	## QUADRANT 1
 	# arc a spans lower zeang from n to e
