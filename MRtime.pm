@@ -41,18 +41,14 @@ sub datesec
 {
 	use Time::Local;
 	my ($yyyy,$MM,$dd,$hh,$mm,$ss) = @_;
-	print"datesec: $yyyy,$MM,$dd,$hh,$mm,$ss\n";
+	#print"datesec1: $yyyy,$MM,$dd,$hh,$mm,$ss\n";
 	if($yyyy<1900 || $yyyy>2100 ||
 		$MM<1 || $MM>12 ||
 		$dd<1 || $dd>31 ||
-		$hh<1 || $hh>23 ||
-		$mm<1 || $mm>59 ||
-		$ss<1 || $ss>59) {return 0}
+		$hh<0 || $hh>23 ||
+		$mm<0 || $mm>59 ||
+		$ss<0 || $ss>59) {return 0}
 	else {return timelocal($ss, $mm, $hh, $dd, $MM-1, $yyyy-1900)}
-# 	use Time::Local;
-# 	my $dtsec;
-# 	$dtsec = timelocal($_[5], $_[4], $_[3], $_[2], $_[1]-1, $_[0]-1900);
-# 	return ($dtsec);
 }
 
 #***************************************************************************
