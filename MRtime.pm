@@ -344,18 +344,19 @@ sub jdf2dt
 # 2003-3-13
 #v101 060629 rmr -- start config control
 #v2 150317 rmr -- use timelocal() to compute.
-
+#v3 200419 rmr -- correct by 1 hr.
 	my $yyyy = $_[0];
 	my $jdf = $_[1];
 
 	# FIND ESECS ON 1 JAN
 	my $esecs = timelocal(0,0,0,1,0,$yyyy-1900);
 	#my $esecs = timegm(0,0,0,1,0,$yyyy-1900);
-	#printf"esecs=%s\n",dtstr($esecs,'short');
+	#printf"esecs=%d=%s\n",$esecs,dtstr($esecs);
 	
 	# ADD ON THE CURRENT JDAY
-	$esecs += ($jdf - 1) * 86400;
-	#print "esecs at jdf = $jdf: $esecs\n";	
+	#  200419 I discovered a 1 hr error and had to subtract
+	$esecs += ($jdf - 1) * 86400 - 3600;
+	#printf "esecs at jdf = %.3f, %s\n", $esecs,dtstr($esecs);	
 	return $esecs;
 }
 #************************************************************/
